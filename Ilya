@@ -1,0 +1,114 @@
+#include <iostream>
+#include <string>
+
+const int MAX_PLAYERS = 10; // Максимальное количество игроков
+
+// Перечисление для фаз игры
+enum GamePhase {
+    DAY,
+    NIGHT
+};
+
+// Базовый класс для игрока
+class Player {
+public:
+    std::string name;  // Имя игрока
+    std::string role;  // Роль игрока
+    bool isAlive;      // Статус игрока (живой/мертвый)
+
+    Player(std::string playerName, std::string playerRole)
+        : name(playerName), role(playerRole), isAlive(true) {}
+
+    void displayInfo() const {
+        std::cout << "Имя: " << name << ", Роль: " << role << ", Статус: " 
+                  << (isAlive ? "Жив" : "Мертв") << std::endl;
+    }
+};
+
+// Класс для игроков-мафий
+class MafiaPlayer : public Player {
+public:
+    MafiaPlayer(std::string playerName) 
+        : Player(playerName, "Мафия") {}
+};
+
+// Класс для мирных жителей
+class CivilianPlayer : public Player {
+public:
+    CivilianPlayer(std::string playerName)
+        : Player(playerName, "Мирный Житель") {}
+};
+
+// Класс для игры, который будет управлять состоянием
+class Game {
+private:
+    Player players[MAX_PLAYERS]; // Массив указателей на игроков
+    int playerCount;               // Текущее количество игроков
+    GamePhase currentPhase;        // Текущая фаза игры
+
+public:
+    Game() : playerCount(0), currentPhase(DAY) {} // Конструктор
+
+    void addPlayer(Player player) {
+        if (playerCount < MAX_PLAYERS) {
+            players[playerCount] = player; // Добавление игрока
+            playerCount++;                 // Увеличение счетчика
+        } else {
+            std::cout << "Максимальное количество игроков достигнуто!" << std::endl;
+        }
+    }
+
+    void displayPlayers() const {
+        for (int i = 0; i < playerCount; i++) {
+            players[i]->displayInfo(); // Вывод информации о каждом игроке
+        }
+    }
+
+    void dayPhase() {
+        std::cout << "День! Время обсуждений и голосований." << std::endl;
+        // Здесь можно реализовать логику для дня
+    }
+
+    void nightPhase() {
+        std::cout << "Ночь! Время действий для мафии." << std::endl;
+        // Здесь можно реализовать логику для ночи
+    }
+
+    void nextPhase() {
+        if (currentPhase == DAY) {
+            currentPhase = NIGHT; // Переход на ночь
+            nightPhase();         // Выполнение логики ночи
+        } else {
+            currentPhase = DAY;   // Переход на день
+            dayPhase();           // Выполнение логики дня
+        }
+    }
+
+    ~Game() {
+        for (int i = 0; i < playerCount; i++) {
+            delete players[i]; // Освобождение памяти для игроков
+        }
+    }
+};
+
+int main() {
+    Game mafiaGame;
+
+    // Создание и добавление игроков
+    mafiaGame.addPlayer(new MafiaPlayer("Иван"));
+    mafiaGame.addPlayer(new CivilianPlayer("Мария"));
+    mafiaGame.addPlayer(new CivilianPlayer("Петр"));
+    mafiaGame.addPlayer(new MafiaPlayer("Света"));
+
+    // Отображение информации о игроках
+    mafiaGame.displayPlayers();
+
+    // Игровой цикл (например, 3 раунда)
+    for (int round = 0; round < 3; round++) {
+        std::cout << "Раунд " << round + 1 << std::endl;
+        mafiaGame.nextPhase(); // Переход на ночь/день
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
